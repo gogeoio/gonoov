@@ -1,0 +1,25 @@
+{
+  "data": [
+    {
+      "id": "50160415459431001089550010000665731583369649",
+      "nfeProc": {
+        "NFe": {
+          "xmlns": "http://www.portalfiscal.inf.br/nfe",
+          "infNFe": {
+            "ide": {
+              "dhEmi": 12345678
+            },
+            "versao": 3.1
+          }
+        },
+        "versao": 3.1
+      }
+    }
+  ],
+  "pagination": {
+    "pageSize": 500,
+    "pageTotalElements": 1,
+    "lastPage": true,
+    "nextProtocol": 2984501
+  }
+}
