@@ -2,9 +2,62 @@ package gonoov
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 )
+
+type NoovString string
+
+func (v *NoovString) UnmarshalJSON(data []byte) error {
+	var s string
+
+	err := json.Unmarshal(data, &s)
+
+	if err != nil {
+		s = fmt.Sprintf("%s", data)
+	}
+
+	*v = NoovString(s)
+
+	return nil
+}
+
+type NoovTime struct {
+	Time  time.Time
+	Valid bool
+}
+
+func (t *NoovTime) UnmarshalJSON(data []byte) error {
+	var s string
+	var err error
+	var tt time.Time
+
+	err = json.Unmarshal(data, &s)
+
+	if err != nil {
+		*t = NoovTime{Time: time.Now(), Valid: false}
+		return nil
+	}
+
+	layouts := []string{"2006-01-02T15:04:05", "2006-01-02T15:04:05-07:00"}
+
+	for _, layout := range layouts {
+		tt, err = time.Parse(layout, s)
+
+		if err == nil {
+			break
+		}
+	}
+
+	if err != nil {
+		*t = NoovTime{Time: time.Now(), Valid: false}
+		return nil
+	}
+
+	*t = NoovTime{Time: tt, Valid: true}
+	return err
+}
 
 type Noov struct {
 	ApiKey    string
@@ -25,9 +78,20 @@ type LoginParams struct {
 }
 
 type Pagination struct {
-	PageSize  int  `json:"pageSize"`
-	PageTotal int  `json:"pageTotalElements"`
-	LastPage  bool `json:"lastPage"`
+	PageSize  int  `json:"pageSize,omitempty"`
+	PageTotal int  `json:"pageTotalElements,omitempty"`
+	LastPage  bool `json:"lastPage,omitempty"`
+}
+
+type StaticPagination struct {
+	Pagination
+	Number        int   `json:"number,omitempty"`
+	TotalElements int64 `json:"totalElements,omitempty"`
+}
+
+type DynamicPagination struct {
+	Pagination
+	NextProtocol int64 `json:"nextProtocol,omitempty"`
 }
 
 type NoovError struct {
@@ -56,10 +120,11 @@ type NfeRawResponse struct {
 }
 
 type NfeParams struct {
+	DynamicPagination
 	Model        []string `json:"modelo"`
 	Number       string   `json:"numero,omitempty"`
 	Serie        string   `json:"serie,omitempty"`
-	ECnpj        []string `json:"emiCnpj"`
+	ECnpj        []string `json:"emiCnpj,omitempty"`
 	DCnpj        []string `json:"destCnpj,omitempty"`
 	Cancelled    bool     `json:"cancelados"`
 	Cean         []string `json:"cean,omitempty"`
@@ -72,15 +137,15 @@ type NfeParams struct {
 	RDate        int64    `json:"recData,omitempty"`
 	ECity        string   `json:"emitCidade,omitempty"`
 	EState       string   `json:"emitUF,omitempty"`
-	Size         int      `json:"size"`
-	NextProtocal int      `json:"nextProtocol,omitempty"`
+	Size         int      `json:"size,omitempty"`
+	NextProtocol int      `json:"nextProtocol,omitempty"`
 	AllCnpj      bool     `json:"allCnpj"`
 }
 
 type InfProt struct {
 	DigVal   string      `json:"digVal"`
 	VerAplic string      `json:"verAplic"`
-	DhRecbto time.Time   `json:"dhrecbto"`
+	DhRecbto NoovTime    `json:"dhrecbto"`
 	ChNfe    string      `json:"chNFe"`
 	XMotivo  string      `json:"xMotivo"`
 	TpAmb    float32     `json:"tpAmb"`
@@ -94,25 +159,25 @@ type ProNfe struct {
 }
 
 type ICMSTotal struct {
-	VICMSUFDest  string  `json:"vICMSUFDest"`
-	VFCPUFDest   string  `json:"vFCPUFDest"`
-	VBC          string  `json:"vBC"`
-	VST          string  `json:"vST"`
-	VProd        float64 `json:"vProd"`
-	VTotTrib     string  `json:"vTotTrib"`
-	VBCST        string  `json:"vBCST"`
-	VCOFINS      string  `json:"vCOFINS"`
-	VFrete       string  `json:"vFrete"`
-	VOutro       string  `json:"vOutro"`
-	VICMSDeson   string  `json:"vICMSDeson"`
-	VII          string  `json:"vII"`
-	VDesc        string  `json:"vDesc"`
-	VICMSUFRemet string  `json:"vICMSUFRemet"`
-	VIPI         string  `json:"vIPI"`
-	VPIS         string  `json:"vPIS"`
-	VICMS        string  `json:"vICMS"`
-	VSeg         string  `json:"vSeg"`
-	VNF          float64 `json:"vNF"`
+	VICMSUFDest  json.Number `json:"vICMSUFDest"`
+	VFCPUFDest   json.Number `json:"vFCPUFDest"`
+	VBC          json.Number `json:"vBC"`
+	VST          json.Number `json:"vST"`
+	VProd        json.Number `json:"vProd"`
+	VTotTrib     json.Number `json:"vTotTrib"`
+	VBCST        json.Number `json:"vBCST"`
+	VCOFINS      json.Number `json:"vCOFINS"`
+	VFrete       json.Number `json:"vFrete"`
+	VOutro       json.Number `json:"vOutro"`
+	VICMSDeson   json.Number `json:"vICMSDeson"`
+	VII          json.Number `json:"vII"`
+	VDesc        json.Number `json:"vDesc"`
+	VICMSUFRemet json.Number `json:"vICMSUFRemet"`
+	VIPI         json.Number `json:"vIPI"`
+	VPIS         json.Number `json:"vPIS"`
+	VICMS        json.Number `json:"vICMS"`
+	VSeg         json.Number `json:"vSeg"`
+	VNF          json.Number `json:"vNF"`
 }
 
 type NfeTotal struct {
@@ -120,69 +185,59 @@ type NfeTotal struct {
 }
 
 type NfeObsCont struct {
-	XCampo string  `json:"xCampo"`
-	XTexto float64 `json:"xTexto"`
+	XCampo string `json:"xCampo"`
+	XTexto string `json:"xTexto"`
 }
 
 type NfeInfAdic struct {
-	ObsCont []NfeObsCont `json:"obsCont"`
-	InfCpl  string       `json:"infCpl"`
+	// TODO Criar um tipo para fazer parser de objeto para array
+	// Enviar email para Oobj para tentar alterar esse formato
+	//ObsCont []NfeObsCont `json:"obsCont"`
+	InfCpl string `json:"infCpl"`
 }
 
-type EnderDest struct {
-	CEP     json.Number `json:"CEP"`
-	Fone    json.Number `json:"fone"`
-	Nro     float64     `json:"nro"`
-	CMun    float64     `json:"cMun"`
-	UF      string      `json:"UF"`
-	CPais   float64     `json:"cPais"`
-	XMun    string      `json:"xMun"`
-	XPais   string      `json:"xPais"`
-	XLgr    string      `json:"xLgr"`
-	XBairro string      `json:"xBairro"`
+type NfeAddress struct {
+	CEP     string     `json:"CEP"`
+	CMun    NoovString `json:"cMun"`
+	CPais   NoovString `json:"cPais"`
+	Fone    string     `json:"fone"`
+	Nro     NoovString `json:"nro"`
+	UF      string     `json:"UF"`
+	XMun    string     `json:"xMun"`
+	XPais   string     `json:"xPais"`
+	XBairro string     `json:"xBairro"`
+	XLgr    NoovString `json:"xLgr"`
+	XCpl    NoovString `json:"xCpl"`
 }
 
 type NfeDest struct {
-	Cnpj      string      `json:"CNPJ"`
-	EnderDest EnderDest   `json:"enderDest"`
-	IE        json.Number `json:"IE"`
-	IndIEDest float64     `json:"indIEDest"`
-	Email     string      `json:"email"`
-	XNome     string      `json:"xNome"`
+	Cnpj      string     `json:"CNPJ"`
+	Email     string     `json:"email"`
+	EnderDest NfeAddress `json:"enderDest"`
+	IE        NoovString `json:"IE"`
+	IndIEDest int        `json:"indIEDest"`
+	XNome     string     `json:"xNome"`
 }
 
 type NfeVol struct {
-	PesoL float64 `json:"pesoL"`
-	Esp   string  `json:"esp"`
-	QVol  float64 `json:"qVol"`
-	PesoB float64 `json:"pesoB"`
+	PesoL json.Number `json:"pesoL"`
+	Esp   string      `json:"esp"`
+	QVol  int         `json:"qVol"`
+	PesoB json.Number `json:"pesoB"`
 }
 
 type NfeTransp struct {
-	ModFrete float64 `json:"modFrete"`
-	Vol      NfeVol  `json:"vol"`
-}
-
-type NfeEnderEmit struct {
-	XLgr    string      `json:"xLgr"`
-	UF      string      `json:"UF"`
-	Nro     float64     `json:"nro"`
-	CMun    float64     `json:"cMun"`
-	XBairro string      `json:"xBairro"`
-	CEP     json.Number `json:"CEP"`
-	Fone    json.Number `json:"fone"`
-	XPais   string      `json:"xPais"`
-	CPais   float64     `json:"cPais"`
-	XMun    string      `json:"xMun"`
+	ModFrete int    `json:"modFrete"`
+	Vol      NfeVol `json:"vol"`
 }
 
 type NfeEmit struct {
-	XFant     string       `json:"xFant"`
-	CNPJ      string       `json:"CNPJ"`
-	EnderEmit NfeEnderEmit `json:"enderEmit"`
-	IE        json.Number  `json:"IE"`
-	XNome     string       `json:"xNome"`
-	CRT       float64      `json:"CRT"`
+	XFant     string     `json:"xFant"`
+	CNPJ      string     `json:"CNPJ"`
+	EnderEmit NfeAddress `json:"enderEmit"`
+	XNome     string     `json:"xNome"`
+	CRT       int        `json:"CRT"`
+	IE        NoovString `json:"IE"`
 }
 
 type ICMS struct {
@@ -239,32 +294,32 @@ type Produto struct {
 
 type NfeDet struct {
 	Imposto Imposto `json:"imposto"`
-	NItem   float32 `json:"nItem"`
+	NItem   int     `json:"nItem"`
 	Prod    Produto `json:"prod"`
 }
 
 type NfeIde struct {
+	DhSaiEnt string      `json:"dhSaiEnt"`
 	TpEmis   json.Number `json:"tpEmis"`
 	TpNF     json.Number `json:"tpNF"`
 	CMunFG   json.Number `json:"cMunFG"`
-	DhSaiEnt string      `json:"dhSaiEnt"`
 	CUF      json.Number `json:"cUF"`
 	Mod      json.Number `json:"mod"`
-	DhEmi    string      `json:"dhEmi"`
 	TpAmb    json.Number `json:"tpAmb"`
 	TpImp    json.Number `json:"tpImp"`
 	FinNFe   json.Number `json:"finNFe"`
 	IndFinal json.Number `json:"indFinal"`
-	NatOp    string      `json:"natOp"`
 	ProcEmi  json.Number `json:"procEmi"`
 	IDDest   json.Number `json:"idDest"`
 	NNF      json.Number `json:"nNF"`
-	VerProc  string      `json:"verProc"`
 	IndPag   json.Number `json:"indPag"`
 	IndPres  json.Number `json:"indPres"`
 	Serie    json.Number `json:"serie"`
-	CNF      json.Number `json:"cNF"`
 	CDV      json.Number `json:"cDV"`
+	CNF      NoovString  `json:"cNF"`
+	NatOp    NoovString  `json:"natOp"`
+	VerProc  NoovString  `json:"verProc"`
+	DhEmi    NoovTime    `json:"dhEmi"`
 }
 
 type InfNfe struct {
@@ -272,11 +327,13 @@ type InfNfe struct {
 	Version float32    `json:"versao"`
 	Total   NfeTotal   `json:"total"`
 	InfAdic NfeInfAdic `json:"infAdic"`
-	Dest    NfeDest    `json:"dest"`
 	Transp  NfeTransp  `json:"transp"`
-	Emit    NfeEmit    `json:"emit"`
-	Det     []NfeDet   `json:"det"`
 	Ide     NfeIde     `json:"ide"`
+	Dest    NfeDest    `json:"dest"`
+	Emit    NfeEmit    `json:"emit"`
+
+	// TODO Tratar quando for array ou objeto
+	//Det     []NfeDet   `json:"det"`
 }
 
 type NFe struct {
@@ -285,12 +342,10 @@ type NFe struct {
 }
 
 type NfeProc struct {
-	Xmlns   string `json:"xmlns"`
-	ProtNfe ProNfe `json:"protNFe"`
-
-	Xmlns2 string `json:"xmlns:ns2"`
-	NFe    NFe    `json:"NFe"`
-
+	Xmlns   string  `json:"xmlns"`
+	ProtNfe ProNfe  `json:"protNFe"`
+	Xmlns2  string  `json:"xmlns:ns2"`
+	NFe     NFe     `json:"NFe"`
 	Version float32 `json:"versao"`
 }
 

@@ -13,47 +13,43 @@ var (
 	nfeUrl = "app/nfe"
 )
 
-func (noov *Noov) Get(params NfeParams) ([]NfeResponse, error) {
+func (noov *Noov) GetNfe(params NfeParams) (NfeRawResponse, error) {
 	rresp := NfeRawResponse{}
 
 	b, err := json.Marshal(params)
 
 	if err != nil {
-		return rresp.Data, err
+		return rresp, err
 	}
 
 	url := getNfeUrl(noov)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
-
-	if err != nil {
-		return rresp.Data, err
-	}
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(b))
 
 	setRequestHeaders(req, noov.Token)
 	resp, err := noov.client.Do(req)
 
 	if err != nil {
-		return rresp.Data, err
+		return rresp, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		return rresp.Data, err
+		return rresp, err
 	}
 
 	err = json.Unmarshal(body, &rresp)
 
 	if err != nil {
-		return rresp.Data, err
+		return rresp, err
 	}
 
 	if len(rresp.Meta.Errors) > 0 {
 		err := fmt.Sprintf("%v", rresp.Meta.Errors)
-		return rresp.Data, errors.New(err)
+		return rresp, errors.New(err)
 	}
 
-	return rresp.Data, err
+	return rresp, err
 }
 
 func getNfeUrl(noov *Noov) string {
