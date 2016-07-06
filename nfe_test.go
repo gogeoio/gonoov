@@ -89,7 +89,35 @@ func TestNoov_GetWithInvalidTime(t *testing.T) {
 		assert.NotEmpty(nfes.Data)
 
 		assert.Equal(float32(3.1), nfes.Data[0].NfeProc.Version)
-		assert.False(nfes.Data[0].NfeProc.NFe.InfNfe.Ide.DhEmi.Valid)
+		assert.False(nfes.Data[0].NfeProc.NFe.InfNfe.Ide.DEmi.Valid)
+	}
+}
+
+func TestNoov_GetNfeDet(t *testing.T) {
+	assert := assert.New(t)
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	noov := NewNoov(loginParams)
+	noov.Token = "token-test"
+
+	files := []string{"fixture-4", "fixture-5"}
+
+	for _, file := range files {
+		m := make(map[string]interface{})
+		fixture, _ := readFixture(fmt.Sprintf("fixtures/nfe/%s.json", file))
+		json.Unmarshal(fixture, &m)
+
+		url := getNfeUrl(noov)
+		registerNfeGetResponder(assert, url, noov.Token, 200, m)
+
+		params := NfeParams{}
+		nfes, err := noov.GetNfe(params)
+		assert.NoError(err)
+		assert.NotEmpty(nfes.Data)
+
+		assert.Equal(float32(3.1), nfes.Data[0].NfeProc.Version)
+		assert.NotEmpty(nfes.Data[0].NfeProc.NFe.InfNfe.Det)
 	}
 }
 

@@ -13,6 +13,19 @@ import (
 )
 
 func (noov *Noov) Authenticate() error {
+	if noov.TokenTimestamp > 0 {
+		k := 25 * time.Minute
+
+		timestamp := noov.TokenTimestamp
+
+		ts := time.Unix(timestamp / 1000, 0)
+		now := time.Now()
+
+		if !now.After(ts.Add(k)) {
+			return nil
+		}
+	}
+
 	hash, ts := createHash(noov)
 	data, err := noov.login(hash, ts)
 
@@ -24,6 +37,7 @@ func (noov *Noov) Authenticate() error {
 	err = json.Unmarshal(data, &token)
 
 	noov.Token = string(token.Token)
+	noov.TokenTimestamp = ts
 	return err
 }
 
@@ -60,6 +74,7 @@ func computeHmac256(message, secret string) string {
 }
 
 func createHash(noov *Noov) (string, int64) {
+	//ts := time.Now().Unix() * 1000 // / int64(time.Millisecond)
 	ts := time.Now().UnixNano() / int64(time.Millisecond)
 	str := fmt.Sprintf("%s%s%d", noov.appname, noov.email, ts)
 	hash := computeHmac256(str, noov.ApiSecret)

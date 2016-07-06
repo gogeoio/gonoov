@@ -4,6 +4,13 @@
 
 ### Upcoming
 
+## 0.1.2 - 2016-07-06
+
+### Adicionado
+
+- Autenticar novamente apenas se tiver passado 5 minutos após o primeiro login
+- Tipo para detalhe da NFe com tratamento de array e objeto
+
 ## 0.1.1 - 2016-07-05
 
 ### Adicionado

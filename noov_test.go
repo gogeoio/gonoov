@@ -8,7 +8,6 @@ import (
 
 var (
 	loginParams = LoginParams{"apikey", "apisecret", "noovTests", "ti@gogeo.io"}
-	tokenTest   = []byte(`{"token":"tokenTest"}`)
 )
 
 func TestNewNoov(t *testing.T) {
