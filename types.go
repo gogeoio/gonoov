@@ -40,7 +40,7 @@ func (t *NoovTime) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	layouts := []string{"2006-01-02T15:04:05", "2006-01-02T15:04:05-07:00"}
+	layouts := []string{"2006-01-02T15:04:05", "2006-01-02T15:04:05-07:00", "2006-01-02"}
 
 	for _, layout := range layouts {
 		tt, err = time.Parse(layout, s)
@@ -60,14 +60,15 @@ func (t *NoovTime) UnmarshalJSON(data []byte) error {
 }
 
 type Noov struct {
-	ApiKey    string
-	ApiSecret string
-	url       string
-	version   string
-	appname   string
-	email     string
-	Token     string
-	client    *http.Client
+	ApiKey         string
+	ApiSecret      string
+	url            string
+	version        string
+	appname        string
+	email          string
+	Token          string
+	TokenTimestamp int64 // token timestamp
+	client         *http.Client
 }
 
 type LoginParams struct {
@@ -113,11 +114,6 @@ type GenericResponse struct {
 /*                                 NFe types                                 */
 /*                                                                           */
 /* ------------------------------------------------------------------------- */
-
-type NfeRawResponse struct {
-	GenericResponse
-	Data []NfeResponse
-}
 
 type NfeParams struct {
 	DynamicPagination
@@ -222,7 +218,7 @@ type NfeDest struct {
 type NfeVol struct {
 	PesoL json.Number `json:"pesoL"`
 	Esp   string      `json:"esp"`
-	QVol  int         `json:"qVol"`
+	QVol  NoovString  `json:"qVol"`
 	PesoB json.Number `json:"pesoB"`
 }
 
@@ -242,54 +238,57 @@ type NfeEmit struct {
 
 type ICMS struct {
 	ICMS60 struct {
-		CST        float64 `json:"CST"`
-		VBCSTRet   string  `json:"vBCSTRet"`
-		VICMSSTRet string  `json:"vICMSSTRet"`
-		Orig       float64 `json:"orig"`
+		CST        NoovString `json:"CST"`
+		VBCSTRet   NoovString `json:"vBCSTRet"`
+		VICMSSTRet NoovString `json:"vICMSSTRet"`
+		Orig       NoovString `json:"orig"`
 	} `json:"ICMS60"`
 }
 
 type COFINS struct {
 	COFINSAliq struct {
-		VCOFINS string `json:"vCOFINS"`
-		CST     string `json:"CST"`
-		VBC     string `json:"vBC"`
-		PCOFINS string `json:"pCOFINS"`
+		VCOFINS NoovString `json:"vCOFINS"`
+		CST     NoovString `json:"CST"`
+		VBC     NoovString `json:"vBC"`
+		PCOFINS NoovString `json:"pCOFINS"`
 	} `json:"COFINSAliq"`
 }
 
 type PIS struct {
 	PISAliq struct {
-		VPIS string `json:"vPIS"`
-		CST  string `json:"CST"`
-		VBC  string `json:"vBC"`
-		PPIS string `json:"pPIS"`
+		VPIS NoovString `json:"vPIS"`
+		CST  NoovString `json:"CST"`
+		VBC  NoovString `json:"vBC"`
+		PPIS NoovString `json:"pPIS"`
 	} `json:"PISAliq"`
 }
 
 type Imposto struct {
-	ICMS     ICMS   `json:"ICMS"`
-	COFINS   COFINS `json:"COFINS"`
-	PIS      PIS    `json:"PIS"`
-	VTotTrib string `json:"vTotTrib"`
+	ICMS     ICMS       `json:"ICMS"`
+	COFINS   COFINS     `json:"COFINS"`
+	PIS      PIS        `json:"PIS"`
+	VTotTrib NoovString `json:"vTotTrib"`
 }
 
 type Produto struct {
-	XProd    string      `json:"xProd"`
+	CEAN     NoovString  `json:"cEAN"`
+	CProd    NoovString  `json:"cProd"`
+	CEANTrib NoovString  `json:"cEANTrib"`
+	CEST     NoovString  `json:"CEST"`
 	CFOP     json.Number `json:"CFOP"`
-	UCom     string      `json:"uCom"`
-	UTrib    string      `json:"uTrib"`
-	CEANTrib json.Number `json:"cEANTrib"`
-	VUnCom   json.Number `json:"vUnCom,number"`
-	CProd    json.Number `json:"cProd"`
-	CEST     string      `json:"CEST"`
-	VUnTrib  json.Number `json:"vUnTrib"`
 	IndTot   json.Number `json:"indTot"`
 	QCom     json.Number `json:"qCom"`
-	VProd    json.Number `json:"vProd"`
 	QTrib    json.Number `json:"qTrib"`
-	NCM      json.Number `json:"NCM"`
-	CEAN     json.Number `json:"cEAN"`
+	UCom     NoovString  `json:"uCom"`
+	UTrib    NoovString  `json:"uTrib"`
+	VProd    float64     `json:"vProd"`
+	VFrete   float64     `json:"vFrete"`
+	VUnCom   NoovString  `json:"vUnCom,number"`
+	VUnTrib  NoovString  `json:"vUnTrib"`
+	XProd    string      `json:"xProd"`
+
+	// TODO Criar marshal para não deixar como notação científica
+	//NCM json.Number `json:"NCM"`
 }
 
 type NfeDet struct {
@@ -319,7 +318,7 @@ type NfeIde struct {
 	CNF      NoovString  `json:"cNF"`
 	NatOp    NoovString  `json:"natOp"`
 	VerProc  NoovString  `json:"verProc"`
-	DhEmi    NoovTime    `json:"dhEmi"`
+	DEmi     NoovTime    `json:"dEmi"`
 }
 
 type InfNfe struct {
@@ -331,9 +330,32 @@ type InfNfe struct {
 	Ide     NfeIde     `json:"ide"`
 	Dest    NfeDest    `json:"dest"`
 	Emit    NfeEmit    `json:"emit"`
+	Det     NoovNfeDet `json:"det"`
+}
 
-	// TODO Tratar quando for array ou objeto
-	//Det     []NfeDet   `json:"det"`
+type NoovNfeDet []NfeDet
+
+func (det *NoovNfeDet) UnmarshalJSON(data []byte) error {
+	array := []NfeDet{}
+
+	err := json.Unmarshal(data, &array)
+
+	if err != nil {
+		// TODO handle it
+		var item NfeDet
+
+		err = json.Unmarshal(data, &item)
+
+		if err != nil {
+			return err
+		}
+
+		array = append(array, item)
+	}
+
+	*det = NoovNfeDet(array)
+
+	return err
 }
 
 type NFe struct {
@@ -352,6 +374,11 @@ type NfeProc struct {
 type NfeResponse struct {
 	ID      string  `json:"id"`
 	NfeProc NfeProc `json:"nfeProc"`
+}
+
+type NfeRawResponse struct {
+	GenericResponse
+	Data []NfeResponse
 }
 
 /* ------------------------------------------------------------------------- */

@@ -1,0 +1,44 @@
+{
+  "data": [
+    {
+      "id": "50160415459431001089550010000665731583369649",
+      "nfeProc": {
+        "xmlns:ns2": "http://www.w3.org/2000/09/xmldsig#",
+        "NFe": {
+          "xmlns": "http://www.portalfiscal.inf.br/nfe",
+          "infNFe": {
+            "det": [
+              {
+                "nItem": 1,
+                "prod": {
+                  "xProd": "CAIXA D''AGUA POLIETILENO 500L FORTLEV  . .",
+                  "CFOP": 5409.0,
+                  "uCom": "PC01PC",
+                  "uTrib": "PC01PC",
+                  "cEANTrib": 7898911343049,
+                  "vUnCom": 103.77,
+                  "cProd": 733618.0,
+                  "CEST": "0000000",
+                  "vUnTrib": 103.77,
+                  "indTot": 1.0,
+                  "qCom": 4.0,
+                  "vProd": 415.08,
+                  "qTrib": 4.0,
+                  "NCM": 3.9251E+7,
+                  "cEAN": 7898911343049
+                }
+              }
+            ]
+          }
+        },
+        "versao": 3.1
+      }
+    }
+  ],
+  "pagination": {
+    "pageSize": 500,
+    "pageTotalElements": 1,
+    "lastPage": true,
+    "nextProtocol": 2984501
+  }
+}
