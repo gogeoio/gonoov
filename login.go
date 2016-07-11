@@ -74,7 +74,6 @@ func computeHmac256(message, secret string) string {
 }
 
 func createHash(noov *Noov) (string, int64) {
-	//ts := time.Now().Unix() * 1000 // / int64(time.Millisecond)
 	ts := time.Now().UnixNano() / int64(time.Millisecond)
 	str := fmt.Sprintf("%s%s%d", noov.appname, noov.email, ts)
 	hash := computeHmac256(str, noov.ApiSecret)

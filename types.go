@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -23,24 +24,21 @@ func (v *NoovString) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func (v NoovString) String() string {
+	return string(v)
+}
+
 type NoovTime struct {
 	Time  time.Time
 	Valid bool
 }
 
-func (t *NoovTime) UnmarshalJSON(data []byte) error {
-	var s string
+func NewNoovTime(s string) (NoovTime, error) {
+	layouts := []string{"2006-01-02T15:04:05", "2006-01-02T15:04:05-07:00", "2006-01-02"}
+
+	var t NoovTime
 	var err error
 	var tt time.Time
-
-	err = json.Unmarshal(data, &s)
-
-	if err != nil {
-		*t = NoovTime{Time: time.Now(), Valid: false}
-		return nil
-	}
-
-	layouts := []string{"2006-01-02T15:04:05", "2006-01-02T15:04:05-07:00", "2006-01-02"}
 
 	for _, layout := range layouts {
 		tt, err = time.Parse(layout, s)
@@ -51,11 +49,22 @@ func (t *NoovTime) UnmarshalJSON(data []byte) error {
 	}
 
 	if err != nil {
-		*t = NoovTime{Time: time.Now(), Valid: false}
-		return nil
+		t = NoovTime{Valid: false}
+		return t, err
 	}
 
-	*t = NoovTime{Time: tt, Valid: true}
+	t = NoovTime{Time: tt, Valid: true}
+
+	return t, err
+}
+
+func (t *NoovTime) UnmarshalJSON(data []byte) error {
+	s := string(data)
+	s = strings.Replace(s, "\"", "", -1)
+	tt, err := NewNoovTime(s)
+
+	*t = tt
+
 	return err
 }
 
@@ -92,7 +101,7 @@ type StaticPagination struct {
 
 type DynamicPagination struct {
 	Pagination
-	NextProtocol int64 `json:"nextProtocol,omitempty"`
+	NextProtocol NoovString `json:"nextProtocol,omitempty"`
 }
 
 type NoovError struct {
@@ -104,9 +113,8 @@ type Meta struct {
 	Errors []NoovError `json:"errors"`
 }
 
-type GenericResponse struct {
-	Meta       Meta       `json:"meta"`
-	Pagination Pagination `json:"pagination"`
+type MetaResponse struct {
+	Meta Meta `json:"meta"`
 }
 
 /* ------------------------------------------------------------------------- */
@@ -116,34 +124,33 @@ type GenericResponse struct {
 /* ------------------------------------------------------------------------- */
 
 type NfeParams struct {
-	DynamicPagination
-	Model        []string `json:"modelo"`
-	Number       string   `json:"numero,omitempty"`
-	Serie        string   `json:"serie,omitempty"`
-	ECnpj        []string `json:"emiCnpj,omitempty"`
-	DCnpj        []string `json:"destCnpj,omitempty"`
-	Cancelled    bool     `json:"cancelados"`
-	Cean         []string `json:"cean,omitempty"`
-	Key          string   `json:"chave,omitempty"`
-	EEndDate     int64    `json:"emDataFinal,omitempty"`
-	EStartDate   int64    `json:"emDataInicial,omitempty"`
-	EDate        int64    `json:"emData,omitempty"`
-	REndDate     int64    `json:"recDataFinal,omitempty"`
-	RStartDate   int64    `json:"recDataInicial,omitempty"`
-	RDate        int64    `json:"recData,omitempty"`
-	ECity        string   `json:"emitCidade,omitempty"`
-	EState       string   `json:"emitUF,omitempty"`
-	Size         int      `json:"size,omitempty"`
-	NextProtocol int      `json:"nextProtocol,omitempty"`
-	AllCnpj      bool     `json:"allCnpj"`
+	Model        []string   `json:"modelo"`
+	Number       string     `json:"numero,omitempty"`
+	Serie        string     `json:"serie,omitempty"`
+	ECnpj        []string   `json:"emiCnpj,omitempty"`
+	DCnpj        []string   `json:"destCnpj,omitempty"`
+	Cancelled    bool       `json:"cancelados"`
+	Cean         []string   `json:"cean,omitempty"`
+	Key          string     `json:"chave,omitempty"`
+	EEndDate     int64      `json:"emDataFinal,omitempty"`
+	EStartDate   int64      `json:"emDataInicial,omitempty"`
+	EDate        int64      `json:"emData,omitempty"`
+	REndDate     int64      `json:"recDataFinal,omitempty"`
+	RStartDate   int64      `json:"recDataInicial,omitempty"`
+	RDate        int64      `json:"recData,omitempty"`
+	ECity        string     `json:"emitCidade,omitempty"`
+	EState       string     `json:"emitUF,omitempty"`
+	Size         int        `json:"pageSize,omitempty"`
+	NextProtocol NoovString `json:"nextProtocol,omitempty"`
+	AllCnpj      bool       `json:"allCnpj"`
 }
 
 type InfProt struct {
-	DigVal   string      `json:"digVal"`
-	VerAplic string      `json:"verAplic"`
+	DigVal   NoovString  `json:"digVal"`
+	VerAplic NoovString  `json:"verAplic"`
 	DhRecbto NoovTime    `json:"dhrecbto"`
-	ChNfe    string      `json:"chNFe"`
-	XMotivo  string      `json:"xMotivo"`
+	ChNfe    NoovString  `json:"chNFe"`
+	XMotivo  NoovString  `json:"xMotivo"`
 	TpAmb    float32     `json:"tpAmb"`
 	CStat    float32     `json:"cStat"`
 	NProt    json.Number `json:"nProt"`
@@ -193,15 +200,15 @@ type NfeInfAdic struct {
 }
 
 type NfeAddress struct {
-	CEP     string     `json:"CEP"`
+	CEP     NoovString `json:"CEP"`
 	CMun    NoovString `json:"cMun"`
 	CPais   NoovString `json:"cPais"`
-	Fone    string     `json:"fone"`
+	Fone    NoovString `json:"fone"`
 	Nro     NoovString `json:"nro"`
-	UF      string     `json:"UF"`
-	XMun    string     `json:"xMun"`
-	XPais   string     `json:"xPais"`
-	XBairro string     `json:"xBairro"`
+	UF      NoovString `json:"UF"`
+	XMun    NoovString `json:"xMun"`
+	XPais   NoovString `json:"xPais"`
+	XBairro NoovString `json:"xBairro"`
 	XLgr    NoovString `json:"xLgr"`
 	XCpl    NoovString `json:"xCpl"`
 }
@@ -318,7 +325,29 @@ type NfeIde struct {
 	CNF      NoovString  `json:"cNF"`
 	NatOp    NoovString  `json:"natOp"`
 	VerProc  NoovString  `json:"verProc"`
-	DEmi     NoovTime    `json:"dEmi"`
+	DHEmi    NoovTime    `json:"dhEmi"`
+}
+
+func (n *NfeIde) UnmarshalJSON(data []byte) error {
+	type Alias NfeIde
+	alias := Alias{}
+	json.Unmarshal(data, &alias)
+
+	if !alias.DHEmi.Valid {
+		type dhEmi struct {
+			DEmi NoovTime `json:"dEmi"`
+		}
+
+		temp := dhEmi{}
+		json.Unmarshal(data, &temp)
+
+		alias.DHEmi = temp.DEmi
+	}
+
+	nn := NfeIde(alias)
+	*n = nn
+
+	return nil
 }
 
 type InfNfe struct {
@@ -377,8 +406,9 @@ type NfeResponse struct {
 }
 
 type NfeRawResponse struct {
-	GenericResponse
-	Data []NfeResponse
+	MetaResponse
+	Data       []NfeResponse
+	Pagination DynamicPagination `json:"pagination"`
 }
 
 /* ------------------------------------------------------------------------- */

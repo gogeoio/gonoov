@@ -4,6 +4,18 @@
 
 ### Upcoming
 
+## 0.1.3 - 2016-07-11
+
+### Adicionado
+
+- Função para criar tipo NoovTime
+- Função string para tipo NoovString
+- Tratamento da data de emissão entre (dEmi e dhEmi)
+
+### Modificado
+
+- Parâmetro de paginação para endpoint ```/app/nfe```
+
 ## 0.1.2 - 2016-07-06
 
 ### Adicionado

@@ -2,13 +2,13 @@ package gonoov
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
-	"fmt"
 )
 
 var (
@@ -89,7 +89,7 @@ func TestNoov_GetWithInvalidTime(t *testing.T) {
 		assert.NotEmpty(nfes.Data)
 
 		assert.Equal(float32(3.1), nfes.Data[0].NfeProc.Version)
-		assert.False(nfes.Data[0].NfeProc.NFe.InfNfe.Ide.DEmi.Valid)
+		assert.False(nfes.Data[0].NfeProc.NFe.InfNfe.Ide.DHEmi.Valid)
 	}
 }
 
@@ -118,6 +118,9 @@ func TestNoov_GetNfeDet(t *testing.T) {
 
 		assert.Equal(float32(3.1), nfes.Data[0].NfeProc.Version)
 		assert.NotEmpty(nfes.Data[0].NfeProc.NFe.InfNfe.Det)
+
+		ide := nfes.Data[0].NfeProc.NFe.InfNfe.Ide
+		assert.True(ide.DHEmi.Valid)
 	}
 }
 
