@@ -4,6 +4,14 @@
 
 ### Upcoming
 
+## 0.1.4 - 2016-10-20
+
+### Adicionado
+
+- Unmarshall customizado para campo ```NFe.infNFe.transp.vol``` para tratar casos que o dado bruto está como array
+- Dado raw retornado pelo servidor para facilitar validação/debug
+- Timeout para http.Client
+
 ## 0.1.3 - 2016-07-11
 
 ### Adicionado

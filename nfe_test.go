@@ -23,7 +23,7 @@ var (
 )
 
 func TestNoov_Get(t *testing.T) {
-	assert := assert.New(t)
+	ast := assert.New(t)
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -35,18 +35,18 @@ func TestNoov_Get(t *testing.T) {
 	json.Unmarshal(fixture, &m)
 
 	url := getNfeUrl(noov)
-	registerNfeGetResponder(assert, url, noov.Token, 200, m)
+	registerNfeGetResponder(ast, url, noov.Token, 200, m)
 
 	params := NfeParams{}
 	nfes, err := noov.GetNfe(params)
-	assert.NoError(err)
-	assert.NotEmpty(nfes.Data)
+	ast.NoError(err)
+	ast.NotEmpty(nfes.Data)
 
-	assert.Equal(float32(3.1), nfes.Data[0].NfeProc.Version)
+	ast.Equal(float32(3.1), nfes.Data[0].NfeProc.Version)
 }
 
 func TestNoov_GetWithError(t *testing.T) {
-	assert := assert.New(t)
+	ast := assert.New(t)
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -57,16 +57,16 @@ func TestNoov_GetWithError(t *testing.T) {
 	json.Unmarshal(notFoundError, &m)
 
 	url := getNfeUrl(noov)
-	registerNfeGetResponder(assert, url, noov.Token, 404, m)
+	registerNfeGetResponder(ast, url, noov.Token, 404, m)
 
 	params := NfeParams{}
 	nfes, err := noov.GetNfe(params)
-	assert.Error(err)
-	assert.Empty(nfes.Data)
+	ast.Error(err)
+	ast.Empty(nfes.Data)
 }
 
 func TestNoov_GetWithInvalidTime(t *testing.T) {
-	assert := assert.New(t)
+	ast := assert.New(t)
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -81,20 +81,20 @@ func TestNoov_GetWithInvalidTime(t *testing.T) {
 		json.Unmarshal(fixture, &m)
 
 		url := getNfeUrl(noov)
-		registerNfeGetResponder(assert, url, noov.Token, 200, m)
+		registerNfeGetResponder(ast, url, noov.Token, 200, m)
 
 		params := NfeParams{}
 		nfes, err := noov.GetNfe(params)
-		assert.NoError(err)
-		assert.NotEmpty(nfes.Data)
+		ast.NoError(err)
+		ast.NotEmpty(nfes.Data)
 
-		assert.Equal(float32(3.1), nfes.Data[0].NfeProc.Version)
-		assert.False(nfes.Data[0].NfeProc.NFe.InfNfe.Ide.DHEmi.Valid)
+		ast.Equal(float32(3.1), nfes.Data[0].NfeProc.Version)
+		ast.False(nfes.Data[0].NfeProc.NFe.InfNfe.Ide.DHEmi.Valid)
 	}
 }
 
 func TestNoov_GetNfeDet(t *testing.T) {
-	assert := assert.New(t)
+	ast := assert.New(t)
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -109,27 +109,60 @@ func TestNoov_GetNfeDet(t *testing.T) {
 		json.Unmarshal(fixture, &m)
 
 		url := getNfeUrl(noov)
-		registerNfeGetResponder(assert, url, noov.Token, 200, m)
+		registerNfeGetResponder(ast, url, noov.Token, 200, m)
 
 		params := NfeParams{}
 		nfes, err := noov.GetNfe(params)
-		assert.NoError(err)
-		assert.NotEmpty(nfes.Data)
+		ast.NoError(err)
+		ast.NotEmpty(nfes.Data)
 
-		assert.Equal(float32(3.1), nfes.Data[0].NfeProc.Version)
-		assert.NotEmpty(nfes.Data[0].NfeProc.NFe.InfNfe.Det)
+		ast.Equal(float32(3.1), nfes.Data[0].NfeProc.Version)
+		ast.NotEmpty(nfes.Data[0].NfeProc.NFe.InfNfe.Det)
 
 		ide := nfes.Data[0].NfeProc.NFe.InfNfe.Ide
-		assert.True(ide.DHEmi.Valid)
+		ast.True(ide.DHEmi.Valid)
 	}
 }
 
-func registerNfeGetResponder(assert *assert.Assertions, url, token string, status int, m map[string]interface{}) {
-	responder := func(req *http.Request) (*http.Response, error) {
-		assert.Regexp(noovUrl, "http://"+req.URL.Host)
+func TestNoov_GetNfeVol(t *testing.T) {
+	ast := assert.New(t)
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
 
-		assert.Equal("application/json", req.Header.Get("Content-Type"))
-		assert.Equal("Bearer "+token, req.Header.Get("Authorization"))
+	noov := NewNoov(loginParams)
+	noov.Token = "token-test"
+
+	files := []string{"fixture-6"}
+
+	for _, file := range files {
+		m := make(map[string]interface{})
+		fixture, _ := readFixture(fmt.Sprintf("fixtures/nfe/%s.json", file))
+		json.Unmarshal(fixture, &m)
+
+		url := getNfeUrl(noov)
+		registerNfeGetResponder(ast, url, noov.Token, 200, m)
+
+		params := NfeParams{}
+		nfes, err := noov.GetNfe(params)
+		ast.NoError(err)
+		ast.NotEmpty(nfes.Data)
+
+		ast.Equal(NoovString("608"), nfes.Data[0].NfeProc.NFe.InfNfe.Transp.Vol.Marca)
+		ast.Equal(NoovString(""), nfes.Data[0].NfeProc.NFe.InfNfe.Transp.Vol.QVol)
+		ast.Equal(json.Number("12000"), nfes.Data[0].NfeProc.NFe.InfNfe.Transp.Vol.PesoL)
+
+		ast.Equal(NoovString("6001"), nfes.Data[1].NfeProc.NFe.InfNfe.Transp.Vol.Marca)
+		ast.Equal(NoovString("270"), nfes.Data[1].NfeProc.NFe.InfNfe.Transp.Vol.QVol)
+		ast.Equal(json.Number(""), nfes.Data[1].NfeProc.NFe.InfNfe.Transp.Vol.PesoL)
+	}
+}
+
+func registerNfeGetResponder(ast *assert.Assertions, url, token string, status int, m map[string]interface{}) {
+	responder := func(req *http.Request) (*http.Response, error) {
+		ast.Regexp(noovUrl, "http://"+req.URL.Host)
+
+		ast.Equal("application/json", req.Header.Get("Content-Type"))
+		ast.Equal("Bearer "+token, req.Header.Get("Authorization"))
 
 		return httpmock.NewJsonResponse(status, m)
 	}
