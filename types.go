@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/a8m/djson"
 )
 
 type NoovString string
@@ -127,8 +129,8 @@ type NfeParams struct {
 	Model        []string   `json:"modelo"`
 	Number       string     `json:"numero,omitempty"`
 	Serie        string     `json:"serie,omitempty"`
-	ECnpj        []string   `json:"emiCnpj,omitempty"`
-	DCnpj        []string   `json:"destCnpj,omitempty"`
+	ECnpj        []string   `json:"emiDoc,omitempty"`
+	DCnpj        []string   `json:"destDoc,omitempty"`
 	Cancelled    bool       `json:"cancelados"`
 	Cean         []string   `json:"cean,omitempty"`
 	Key          string     `json:"chave,omitempty"`
@@ -223,10 +225,58 @@ type NfeDest struct {
 }
 
 type NfeVol struct {
+	Marca NoovString  `json:"marca"`
 	PesoL json.Number `json:"pesoL"`
 	Esp   string      `json:"esp"`
 	QVol  NoovString  `json:"qVol"`
 	PesoB json.Number `json:"pesoB"`
+}
+
+func (nv *NfeVol) UnmarshalJSON(data []byte) error {
+	type Alias NfeVol
+
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(nv),
+	}
+
+	err := json.Unmarshal(data, &aux)
+
+	if err != nil {
+		err = nil
+
+		dj := djson.NewDecoder(data)
+		array, err := dj.DecodeArray()
+
+		if err != nil {
+			return err
+		}
+
+		// Transform []interface{} --> []map[string]interface{}
+		m := make([]map[string]interface{}, len(array))
+		for i, item := range array {
+			m[i] = item.(map[string]interface{})
+		}
+
+		fm := map[string]interface{}{}
+
+		for _, mmap := range m {
+			for k, v := range mmap {
+				fm[k] = v
+			}
+		}
+
+		d, err := json.Marshal(fm)
+
+		if err != nil {
+			return err
+		}
+
+		err = json.Unmarshal(d, &aux)
+	}
+
+	return err
 }
 
 type NfeTransp struct {
@@ -288,8 +338,8 @@ type Produto struct {
 	QTrib    json.Number `json:"qTrib"`
 	UCom     NoovString  `json:"uCom"`
 	UTrib    NoovString  `json:"uTrib"`
-	VProd    float64     `json:"vProd"`
-	VFrete   float64     `json:"vFrete"`
+	VProd    json.Number `json:"vProd"`
+	VFrete   json.Number `json:"vFrete"`
 	VUnCom   NoovString  `json:"vUnCom,number"`
 	VUnTrib  NoovString  `json:"vUnTrib"`
 	XProd    string      `json:"xProd"`
@@ -409,6 +459,7 @@ type NfeRawResponse struct {
 	MetaResponse
 	Data       []NfeResponse
 	Pagination DynamicPagination `json:"pagination"`
+	Raw        []byte            `json:"-"`
 }
 
 /* ------------------------------------------------------------------------- */

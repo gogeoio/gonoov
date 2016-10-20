@@ -2,6 +2,7 @@ package gonoov
 
 import (
 	"net/http"
+	"time"
 )
 
 var (
@@ -12,7 +13,9 @@ var (
 )
 
 func NewNoov(params LoginParams) *Noov {
-	c := http.Client{}
+	c := http.Client{
+		Timeout: 30 * time.Second,
+	}
 
 	noov := Noov{
 		ApiKey:    params.ApiKey,

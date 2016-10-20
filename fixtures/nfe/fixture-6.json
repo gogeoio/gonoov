@@ -1,0 +1,91 @@
+{
+  "data": [
+    {
+      "id": "52160603380763001507550030000502521245675958",
+      "nfeProc": {
+        "protNFe": {
+          "versao": 3.1,
+          "infProt": {
+            "nProt": 152160588134887,
+            "digVal": "e9DmFKMVYKTYZ5zAyX9itfaGZdU=",
+            "verAplic": "GO3.0",
+            "dhRecbto": "2016-06-02T13:32:24-03:00",
+            "Id": "ID152160588134887",
+            "chNFe": "52160603380763001507550030000502521245675958",
+            "xMotivo": "AutorizadoousodaNF-e",
+            "tpAmb": 1,
+            "cStat": 100
+          }
+        },
+        "NFe": {
+          "infNFe": {
+            "transp": {
+              "modFrete": 0,
+              "vol": {
+                "marca": 608,
+                "pesoL": 12000.0,
+                "pesoB": 23800.0
+              },
+              "transporta": {
+                "xNome": "ANDERSONCABRALDOSSANTOS",
+                "UF": "GO",
+                "xEnder": "RODDEPREZMONTEIRO9,5",
+                "CPF": "85400467253",
+                "xMun": "Trindade"
+              },
+              "veicTransp": {
+                "UF": "GO",
+                "placa": "KCT4325"
+              }
+            }
+          }
+        },
+        "versao": 3.1
+      }
+    },
+    {
+      "id": "52160603380763001507550030000501761679047163",
+      "nfeProc": {
+        "protNFe": {
+          "versao": 3.1,
+          "infProt": {
+            "nProt": 152160587779159,
+            "digVal": "onXSD+sT7Hem0ZMPbuxN0WUAW6A=",
+            "verAplic": "GO3.0",
+            "dhRecbto": "2016-06-01T09:46:48-03:00",
+            "Id": "ID152160587779159",
+            "chNFe": "52160603380763001507550030000501761679047163",
+            "xMotivo": "AutorizadoousodaNF-e",
+            "tpAmb": 1,
+            "cStat": 100
+          }
+        },
+        "NFe": {
+          "infNFe": {
+            "transp": {
+              "modFrete": 0,
+              "vol": [
+                {
+                  "qVol": 270
+                },
+                {
+                  "marca": 6001
+                }
+              ],
+              "veicTransp": {
+                "UF": "GO",
+                "placa": "MWD5229"
+              }
+            }
+          }
+        },
+        "versao": 3.1
+      }
+    }
+  ],
+  "pagination": {
+    "pageSize": 35,
+    "pageTotalElements": 35,
+    "nextProtocol": 5891727
+  }
+}

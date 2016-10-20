@@ -18,7 +18,7 @@ func (noov *Noov) Authenticate() error {
 
 		timestamp := noov.TokenTimestamp
 
-		ts := time.Unix(timestamp / 1000, 0)
+		ts := time.Unix(timestamp/1000, 0)
 		now := time.Now()
 
 		if !now.After(ts.Add(k)) {

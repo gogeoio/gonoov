@@ -38,6 +38,7 @@ func (noov *Noov) GetNfe(params NfeParams) (NfeRawResponse, error) {
 		return rresp, err
 	}
 
+	rresp.Raw = body
 	err = json.Unmarshal(body, &rresp)
 
 	if err != nil {
