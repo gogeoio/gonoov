@@ -4,6 +4,13 @@
 
 ### Upcoming
 
+## 0.1.5 - 2016-10-27
+
+### Adicionado
+
+- Retry quando ocorrer erro 503
+- Unmarshall customizado para campo ```NFe.infNFe.infAdic.obsCont```
+
 ## 0.1.4 - 2016-10-20
 
 ### Adicionado

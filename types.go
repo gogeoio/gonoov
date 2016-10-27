@@ -10,6 +10,7 @@ import (
 	"github.com/a8m/djson"
 )
 
+// Custom type to transform any type to string
 type NoovString string
 
 func (v *NoovString) UnmarshalJSON(data []byte) error {
@@ -190,15 +191,65 @@ type NfeTotal struct {
 }
 
 type NfeObsCont struct {
-	XCampo string `json:"xCampo"`
-	XTexto string `json:"xTexto"`
+	XCampo NoovString `json:"xCampo"`
+	XTexto NoovString `json:"xTexto"`
 }
 
 type NfeInfAdic struct {
-	// TODO Criar um tipo para fazer parser de objeto para array
-	// Enviar email para Oobj para tentar alterar esse formato
-	//ObsCont []NfeObsCont `json:"obsCont"`
-	InfCpl string `json:"infCpl"`
+	ObsCont NfeObsContArray `json:"obsCont"`
+	InfCpl  string          `json:"infCpl"`
+}
+
+type NfeObsContArray []NfeObsCont
+
+func (nv *NfeObsContArray) UnmarshalJSON(data []byte) error {
+	dj := djson.NewDecoder(data)
+	array, err := dj.DecodeArray()
+
+	result := []NfeObsCont{}
+
+	if err != nil {
+		err = nil
+
+		obj, err := dj.DecodeObject()
+
+		if err != nil {
+			return err
+		}
+
+		item := NfeObsCont{}
+		item.XCampo = NoovString(interfaceToString(obj["xCampo"]))
+		item.XTexto = NoovString(interfaceToString(obj["xTexto"]))
+		result = append(result, item)
+
+	} else {
+		// Transform []interface{} --> []map[string]interface{}
+		m := make([]map[string]interface{}, len(array))
+		for i, item := range array {
+			m[i] = item.(map[string]interface{})
+		}
+
+		for _, mm := range m {
+			item := NfeObsCont{}
+			item.XCampo = NoovString(interfaceToString(mm["xCampo"]))
+			item.XTexto = NoovString(interfaceToString(mm["xTexto"]))
+			result = append(result, item)
+		}
+	}
+
+	*nv = NfeObsContArray(result)
+
+	return err
+}
+
+func interfaceToString(v interface{}) string {
+	vv, ok := v.(string)
+
+	if !ok {
+		vv = fmt.Sprintf("%v", v)
+	}
+
+	return vv
 }
 
 type NfeAddress struct {

@@ -14,7 +14,7 @@ var (
 
 func NewNoov(params LoginParams) *Noov {
 	c := http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 180 * time.Second,
 	}
 
 	noov := Noov{
