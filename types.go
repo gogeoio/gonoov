@@ -197,7 +197,25 @@ type NfeObsCont struct {
 
 type NfeInfAdic struct {
 	ObsCont NfeObsContArray `json:"obsCont"`
-	InfCpl  string          `json:"infCpl"`
+	InfCpl  NoovString      `json:"infCpl"`
+}
+
+func (nia *NfeInfAdic) UnmarshalJSON(data []byte) error {
+	type Alias NfeInfAdic
+
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(nia),
+	}
+
+	err := json.Unmarshal(data, &aux)
+
+	if err != nil {
+		//log.Println("----------------------> data", string(data))
+	}
+
+	return nil
 }
 
 type NfeObsContArray []NfeObsCont
@@ -278,7 +296,7 @@ type NfeDest struct {
 type NfeVol struct {
 	Marca NoovString  `json:"marca"`
 	PesoL json.Number `json:"pesoL"`
-	Esp   string      `json:"esp"`
+	Esp   NoovString  `json:"esp"`
 	QVol  NoovString  `json:"qVol"`
 	PesoB json.Number `json:"pesoB"`
 }
