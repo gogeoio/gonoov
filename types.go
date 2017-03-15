@@ -520,8 +520,16 @@ type NfeProc struct {
 }
 
 type NfeResponse struct {
-	ID      string  `json:"id"`
-	NfeProc NfeProc `json:"nfeProc"`
+	ID         string     `json:"id"`
+	NfeProc    NfeProc    `json:"nfeProc"`
+	Enrichment Enrichment `json:"enrichment"`
+}
+
+type Enrichment struct {
+	CodVendedor   string `json:"codvendedor"`
+	NomeVendedor  string `json:"nomevendedor"`
+	CodSupervisor string `json:"codsupervisor"`
+	Tipologia     string `json:"tipologia"`
 }
 
 type NfeRawResponse struct {
