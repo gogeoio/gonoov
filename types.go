@@ -529,7 +529,8 @@ type Enrichment struct {
 	CodVendedor   string `json:"codvendedor"`
 	NomeVendedor  string `json:"nomevendedor"`
 	CodSupervisor string `json:"codsupervisor"`
-	Tipologia     string `json:"tipologia"`
+	CodTipologia  string `json:"tipologia"`
+	NomeTipologia string `json:"nometipologia"`
 }
 
 type NfeRawResponse struct {
