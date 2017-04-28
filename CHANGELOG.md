@@ -4,6 +4,13 @@
 
 ### Upcoming
 
+### 0.1.6 - 2017-04-28
+
+### Adicionado
+
+- Adicionar campo CPF para NfeDest
+- Melhorias no parse de date/time
+
 ## 0.1.5 - 2016-10-27
 
 ### Adicionado
