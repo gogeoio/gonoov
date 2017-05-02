@@ -62,11 +62,25 @@ func NewNoovTime(s string) (NoovTime, error) {
 }
 
 func (t *NoovTime) UnmarshalJSON(data []byte) error {
-	s := string(data)
-	s = strings.Replace(s, "\"", "", -1)
-	tt, err := NewNoovTime(s)
+	type Alias NoovTime
 
-	*t = tt
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(t),
+	}
+
+	err := json.Unmarshal(data, &aux)
+
+	if err != nil {
+		s := string(data)
+		s = strings.Replace(s, "\"", "", -1)
+
+		var tt NoovTime
+
+		tt, err = NewNoovTime(s)
+		*t = tt
+	}
 
 	return err
 }
@@ -127,12 +141,12 @@ type MetaResponse struct {
 /* ------------------------------------------------------------------------- */
 
 type NfeParams struct {
-	Model        []string   `json:"modelo"`
+	Model        []string   `json:"modelo,omitempty"`
 	Number       string     `json:"numero,omitempty"`
 	Serie        string     `json:"serie,omitempty"`
 	ECnpj        []string   `json:"emiDoc,omitempty"`
 	DCnpj        []string   `json:"destDoc,omitempty"`
-	Cancelled    bool       `json:"cancelados"`
+	Cancelled    bool       `json:"cancelados,omitempty"`
 	Cean         []string   `json:"cean,omitempty"`
 	Key          string     `json:"chave,omitempty"`
 	EEndDate     int64      `json:"emDataFinal,omitempty"`
@@ -145,7 +159,7 @@ type NfeParams struct {
 	EState       string     `json:"emitUF,omitempty"`
 	Size         int        `json:"pageSize,omitempty"`
 	NextProtocol NoovString `json:"nextProtocol,omitempty"`
-	AllCnpj      bool       `json:"allCnpj"`
+	AllCnpj      bool       `json:"allCnpj,omitempty"`
 }
 
 type InfProt struct {
@@ -285,6 +299,7 @@ type NfeAddress struct {
 }
 
 type NfeDest struct {
+	CPF       string     `json:"CPF"`
 	Cnpj      string     `json:"CNPJ"`
 	Email     string     `json:"email"`
 	EnderDest NfeAddress `json:"enderDest"`
@@ -520,13 +535,22 @@ type NfeProc struct {
 }
 
 type NfeResponse struct {
-	ID      string  `json:"id"`
-	NfeProc NfeProc `json:"nfeProc"`
+	ID         string     `json:"id"`
+	NfeProc    NfeProc    `json:"nfeProc"`
+	Enrichment Enrichment `json:"enrichment"`
+}
+
+type Enrichment struct {
+	CodVendedor   string `json:"codvendedor"`
+	NomeVendedor  string `json:"nomevendedor"`
+	CodSupervisor string `json:"codsupervisor"`
+	CodTipologia  string `json:"codtipologia"`
+	NomeTipologia string `json:"nometipologia"`
 }
 
 type NfeRawResponse struct {
 	MetaResponse
-	Data       []NfeResponse
+	Data       []NfeResponse     `json:"data"`
 	Pagination DynamicPagination `json:"pagination"`
 	Raw        []byte            `json:"-"`
 }
