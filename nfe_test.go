@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/jarcoal/httpmock.v1"
 )
 
 var (
@@ -166,7 +166,7 @@ func registerNfeGetResponder(ast *assert.Assertions, url, token string, status i
 
 		return httpmock.NewJsonResponse(status, m)
 	}
-	httpmock.RegisterResponder("POST", url, responder)
+	httpmock.RegisterResponder(http.MethodPost, url, responder)
 }
 
 func readFixture(file string) ([]byte, error) {

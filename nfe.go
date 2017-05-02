@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var (
+const (
 	nfeUrl = "app/nfe"
 )
 
@@ -24,7 +24,7 @@ func (noov *Noov) GetNfe(params NfeParams) (NfeRawResponse, error) {
 	}
 
 	url := getNfeUrl(noov)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(b))
+	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
 
 	// EXPLAIN: Tenta autenticar novamente. Este só será chamado quando o timestamp já tiver com a "idade" de pelo menos 25 minutos
 	noov.Authenticate()
