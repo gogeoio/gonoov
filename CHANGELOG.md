@@ -4,6 +4,12 @@
 
 ### Upcoming
 
+### 0.2.0 - 2017-07-14
+
+### Adicionado
+
+- Serviço de stats de notas fiscais emitidas
+
 ### 0.1.6 - 2017-04-28
 
 ### Adicionado
