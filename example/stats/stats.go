@@ -1,21 +1,24 @@
 package main
 
 import (
-	"time"
+	"encoding/json"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/robertogyn19/gonoov"
 
 	"gopkg.in/alecthomas/kingpin.v2"
-	"io/ioutil"
+)
+
+const (
+	dateLayout = "02/01/2006"
 )
 
 var (
 	apikey    = kingpin.Flag("apikey", "apikey").Short('a').Required().String()
-	apiSecret = kingpin.Flag("apiSecret", "apiSecret").Short('s').Required().String()
+	apiSecret = kingpin.Flag("api-secret", "api-secret").Short('s').Required().String()
 	appname   = kingpin.Flag("appname", "appname").Short('n').Required().String()
 	email     = kingpin.Flag("email", "email").Short('e').Required().String()
-	startDate = kingpin.Flag("start-date", "start-date (Format: DD/MM/YYYY)").Short('d').Required().String()
+	startDate = kingpin.Flag("start-date", "start-date (Format: YYYY-MM-DD)").Required().Short('d').String()
 	cnpjs     = kingpin.Flag("cnpjs", "cnpjs").Short('c').Required().Strings()
 )
 
@@ -36,27 +39,17 @@ func main() {
 		log.Fatalf("could not authenticate to noov: %v", err)
 	}
 
-	startDateTime, err := time.Parse("01/02/2006", *startDate)
-
-	if err != nil {
-		log.Fatalf("could not parse date: %v", err)
-	}
-
-	params := gonoov.NfeParams{
-		Model:      []string{"55"},
-		EStartDate: startDateTime.Unix(),
+	statsParams := gonoov.StatsParams{
 		ECnpj:      *cnpjs,
-		Size:       1,
+		EStartDate: *startDate,
 	}
 
-	nferesp, err := noov.GetNfe(params)
+	stats, err := noov.Stats(statsParams)
 
 	if err != nil {
-		log.Fatalf("could not get nfe: %v", err)
+		log.Fatalf("could not get stats from noov: %v", err)
 	}
 
-	if len(nferesp.Data) > 0 {
-		log.Printf("First item: %v", nferesp.Data[0].Enrichment)
-	}
-	ioutil.WriteFile("output.json", nferesp.Raw, 0660)
+	d, _ := json.MarshalIndent(stats, "", "  ")
+	log.Printf("%s", d)
 }

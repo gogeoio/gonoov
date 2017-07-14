@@ -10,14 +10,13 @@ import (
 )
 
 const (
-	statsUrl = "app/stats/emissao"
+	statsUrl = "app/nfe/stats/emissao"
 )
 
 type StatsParams struct {
 	EnvironmentType int        `json:"tpAmb"`
 	ECnpj           []string   `json:"emiDoc,omitempty"`
-	EStartDate      int64      `json:"emDataInicial,omitempty"`
-	EEndDate        int64      `json:"emDataFinal,omitempty"`
+	EStartDate      string     `json:"emData,omitempty"`
 	AllCnpj         bool       `json:"allCnpj,omitempty"`
 	Size            int        `json:"pageSize,omitempty"`
 	Page            int        `json:"page,omitempty"`
@@ -25,10 +24,11 @@ type StatsParams struct {
 }
 
 type Stats struct {
+	MetaResponse
 	Emitentes  []string `json:"emitentes"`
-	EStartDate int64    `json:"emDataInicial,omitempty"`
-	EEndDate   int64    `json:"emDataFinal,omitempty"`
+	EStartDate string   `json:"emData,omitempty"`
 	Total      int      `json:"totalNfesEmitidas,omitempty"`
+	Raw        []byte   `json:"-"`
 }
 
 func (noov *Noov) Stats(params StatsParams) (Stats, error) {
@@ -40,6 +40,11 @@ func (noov *Noov) Stats(params StatsParams) (Stats, error) {
 	if err != nil {
 		log.Printf("could not marshal params: %v", err)
 		return stats, err
+	}
+
+	if params.EnvironmentType == 0 {
+		// Tipo de ambiente padrão
+		params.EnvironmentType = 1
 	}
 
 	url := getStatsUrl(noov)
@@ -60,10 +65,22 @@ func (noov *Noov) Stats(params StatsParams) (Stats, error) {
 		return stats, err
 	}
 
+	if resp.StatusCode == http.StatusGatewayTimeout {
+		return stats, fmt.Errorf("%s", "Gatetway timeout")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		json.Unmarshal(body, &stats)
+		return stats, fmt.Errorf("%s", body)
+	}
+
 	m := make(map[string]Stats)
 	json.Unmarshal(body, &m)
 
-	return m["data"], nil
+	stats = m["data"]
+	stats.Raw = body
+
+	return stats, nil
 }
 
 func getStatsUrl(noov *Noov) string {
