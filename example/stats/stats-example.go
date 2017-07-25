@@ -9,10 +9,6 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-const (
-	dateLayout = "02/01/2006"
-)
-
 var (
 	apikey    = kingpin.Flag("apikey", "apikey").Short('a').Required().String()
 	apiSecret = kingpin.Flag("api-secret", "api-secret").Short('s').Required().String()

@@ -46,7 +46,7 @@ func main() {
 		Model:      []string{"55"},
 		EStartDate: startDateTime.Unix(),
 		ECnpj:      *cnpjs,
-		Size:       1,
+		Size:       1000,
 	}
 
 	nferesp, err := noov.GetNfe(params)

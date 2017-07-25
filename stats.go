@@ -38,7 +38,7 @@ func (noov *Noov) Stats(params StatsParams) (Stats, error) {
 
 	b, err := json.Marshal(params)
 	if err != nil {
-		log.Printf("could not marshal params: %v", err)
+		log.Printf("could not marshal stats params: %v", err)
 		return stats, err
 	}
 
@@ -55,13 +55,15 @@ func (noov *Noov) Stats(params StatsParams) (Stats, error) {
 	resp, err := noov.client.Do(req)
 
 	if err != nil {
+		log.Printf("could not execute stats request: %v", err)
 		return stats, err
 	}
 
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Printf("could not read response body: %v", err)
+		log.Printf("could not read stats response body: %v", err)
 		return stats, err
 	}
 
@@ -75,6 +77,7 @@ func (noov *Noov) Stats(params StatsParams) (Stats, error) {
 	}
 
 	m := make(map[string]Stats)
+	// TODO Tratar erro de unmarshal
 	json.Unmarshal(body, &m)
 
 	stats = m["data"]
