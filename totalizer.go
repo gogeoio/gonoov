@@ -29,6 +29,7 @@ type Totalizer struct {
 	SalesmanID string   `json:"vendedor"`
 	NFEValue   float64  `json:"valorNF"`
 	CFOPs      []string `json:"cfops"`
+	NFEType    float64  `json:"tipoNF"`
 	Raw        []byte   `json:"-"`
 }
 
