@@ -151,7 +151,7 @@ type NfeParams struct {
 	Key          string     `json:"chave,omitempty"`
 	EEndDate     int64      `json:"emDataFinal,omitempty"`
 	EStartDate   int64      `json:"emDataInicial,omitempty"`
-	EDate        int64      `json:"emData,omitempty"`
+	EDate        string     `json:"emData,omitempty"`
 	REndDate     int64      `json:"recDataFinal,omitempty"`
 	RStartDate   int64      `json:"recDataInicial,omitempty"`
 	RDate        int64      `json:"recData,omitempty"`
