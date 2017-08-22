@@ -545,6 +545,7 @@ type Enrichment struct {
 	NomeVendedor  string `json:"nomevendedor"`
 	CodSupervisor string `json:"codsupervisor"`
 	CodTipologia  string `json:"codtipologia"`
+	CodCliente    string `json:"cod_cliente"`
 	NomeTipologia string `json:"nometipologia"`
 }
 
