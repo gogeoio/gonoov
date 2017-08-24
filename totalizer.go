@@ -75,6 +75,11 @@ func (noov *Noov) Totalizer(params TotalizerParams) (TotalizerResponse, error) {
 		return totalizer, fmt.Errorf("%s", "Gateway timeout")
 	}
 
+	// not found data
+	if resp.StatusCode == http.StatusNotFound {
+		return totalizer, nil
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		json.Unmarshal(body, &totalizer)
 		return totalizer, fmt.Errorf("%s", body)

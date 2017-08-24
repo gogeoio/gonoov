@@ -31,7 +31,7 @@ func (noov *Noov) GetNfe(params NfeParams) (NfeRawResponse, error) {
 	setRequestHeaders(req, noov.Token)
 	resp, err := noov.client.Do(req)
 
-	if err != nil || resp.StatusCode == 503 {
+	if err != nil || resp.StatusCode == http.StatusServiceUnavailable {
 		if retryError(resp, err) {
 			fmt.Println("Timeout error. Trying again...")
 			count := 0
@@ -70,6 +70,11 @@ func (noov *Noov) GetNfe(params NfeParams) (NfeRawResponse, error) {
 
 	if err != nil {
 		return rresp, err
+	}
+
+	// not found data
+	if resp.StatusCode == http.StatusNotFound {
+		return rresp, nil
 	}
 
 	rresp.Raw = body
