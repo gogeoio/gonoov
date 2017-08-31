@@ -4,7 +4,7 @@
 
 ### Upcoming
 
-### 0.3.0 - Next
+### 0.3.0
 
 ### Adicionado
 
