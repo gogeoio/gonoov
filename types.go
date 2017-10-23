@@ -541,12 +541,13 @@ type NfeResponse struct {
 }
 
 type Enrichment struct {
-	CodVendedor   string `json:"codvendedor"`
-	NomeVendedor  string `json:"nomevendedor"`
-	CodSupervisor string `json:"codsupervisor"`
-	CodTipologia  string `json:"codtipologia"`
-	CodCliente    string `json:"cod_cliente"`
-	NomeTipologia string `json:"nometipologia"`
+	CodVendedor    string `json:"codvendedor"`
+	NomeVendedor   string `json:"nomevendedor"`
+	CodSupervisor  string `json:"codsupervisor"`
+	NomeSupervisor string `json:"nomesupervisor"`
+	CodTipologia   string `json:"codtipologia"`
+	CodCliente     string `json:"cod_cliente"`
+	NomeTipologia  string `json:"nometipologia"`
 }
 
 type NfeRawResponse struct {
